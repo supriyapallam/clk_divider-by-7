@@ -1,0 +1,52 @@
+//Design Code
+module clkdivf7(input clk,reset,output reg [2:0]q,output reg q3,output wire q4);
+  always@(posedge clk)
+    begin
+      if(reset)
+        q=3'b000;
+      else
+        q[0]<= ((~q[2])&(~q[0]))|((~q[1])&(~q[0]));
+        q[1]<= ((~q[1])&q[0])|((~q[2])&q[1]&(~q[0]));
+        q[2]<= (q[2]&(~q[1]))|(q[1]&q[0]);
+    end
+  always@(negedge clk)
+    begin
+      if(reset)
+        q3=1'b0;
+      else
+        q3=q[2];
+    end
+  assign q4= q3|q[2];
+        
+endmodule
+
+//Test Bench Code
+module tb();
+  wire [2:0]q;
+  reg clk,reset;
+  reg q4;
+  wire q3;
+  clkdivf7 dut(clk,reset,q,q3,q4);
+  initial
+    begin
+      clk=1'b0;
+      forever #5 clk=~clk;
+    end
+  initial
+    begin
+      reset=1'b1;
+      #10;
+      reset=1'b0;
+      #200;
+      $finish;
+    end
+  initial
+    begin
+      $dumpfile("test.vcd");
+      $dumpvars(1);
+    end
+  initial
+    begin
+      $monitor("q=%0d,q3=%0d,q4=%0d",q,q3,q4);
+    end
+endmodule
